@@ -10,6 +10,7 @@ Unified single-file platform (v7 prototype):
  - Optional auto-commit to Git
  - Module placeholders for ZKP privacy, banking defense,
    Game of Life sim, solar system command view, choropleth maps
+ - One-click Test Event button on the dashboard
 
 Security: Put all secrets into a .env file. NEVER commit .env.
 """
@@ -368,6 +369,44 @@ def dashboard():
       font-size: 0.7rem;
       padding: 16px 0 8px;
     }}
+    .test-row {{
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }}
+    .test-row input {{
+      flex: 1;
+      min-width: 140px;
+      background: #0f1520;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }}
+    .test-row button {{
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }}
+    .test-row button:active {{ opacity: 0.85; }}
+    .test-row button:disabled {{ opacity: 0.5; cursor: wait; }}
+    .hint {{
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }}
+    #test-msg {{
+      margin-top: 8px;
+      font-size: 0.8rem;
+      min-height: 1.2em;
+    }}
     /* Mobile card-style table */
     @media (max-width: 640px) {{
       table thead {{ display: none; }}
@@ -416,6 +455,18 @@ def dashboard():
   </div>
 
   <div class="section">
+    <div class="section-title">Test Event</div>
+    <div class="section-body">
+      <div class="test-row">
+        <input type="text" id="test-ip" value="8.8.8.8" placeholder="IP address">
+        <button id="test-btn" onclick="fireTest()">Fire Test Event</button>
+      </div>
+      <div class="hint">Try 8.8.8.8 (US) or 1.1.1.1 / a foreign IP to see scoring. Page refreshes after success.</div>
+      <div id="test-msg"></div>
+    </div>
+  </div>
+
+  <div class="section">
     <div class="section-title">
       Recent Events
       <span class="badge">last 50</span>
@@ -432,7 +483,7 @@ def dashboard():
           </tr>
         </thead>
         <tbody>
-          {rows if rows else '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">No events yet. POST to /login-event to start.</td></tr>'}
+          {rows if rows else '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">No events yet. Use the Test Event button above.</td></tr>'}
         </tbody>
       </table>
     </div>
@@ -497,6 +548,43 @@ def dashboard():
   <div class="footer">
     Appling Cyber Defense Technologies · Local prototype · Secrets stay in .env
   </div>
+
+  <script>
+    async function fireTest() {{
+      const ip = document.getElementById('test-ip').value.trim();
+      const btn = document.getElementById('test-btn');
+      const msg = document.getElementById('test-msg');
+      if (!ip) {{
+        msg.textContent = 'Enter an IP first.';
+        msg.style.color = '#fca5a5';
+        return;
+      }}
+      btn.disabled = true;
+      msg.textContent = 'Sending…';
+      msg.style.color = 'var(--muted)';
+      try {{
+        const res = await fetch('/login-event', {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify({{ ip: ip }})
+        }});
+        const data = await res.json();
+        if (!res.ok) {{
+          msg.textContent = data.error || 'Request failed';
+          msg.style.color = '#fca5a5';
+          btn.disabled = false;
+          return;
+        }}
+        msg.textContent = data.anomaly_detected ? 'Anomaly detected — page refreshing…' : 'Event recorded — page refreshing…';
+        msg.style.color = data.anomaly_detected ? '#fca5a5' : '#86efac';
+        setTimeout(() => location.reload(), 700);
+      }} catch (e) {{
+        msg.textContent = 'Network error: ' + e.message;
+        msg.style.color = '#fca5a5';
+        btn.disabled = false;
+      }}
+    }}
+  </script>
 </body>
 </html>"""
     return HTMLResponse(content=html)
