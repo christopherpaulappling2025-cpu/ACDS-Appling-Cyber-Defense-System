@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+login_events.json
+.env
+venv/
+.venv/
