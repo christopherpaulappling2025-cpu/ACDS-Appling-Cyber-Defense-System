@@ -1,15 +1,28 @@
-# System Overview
+# System Overview — ACDS v7
 
-The ACDS prototype proposes a framework for:
-1. Collecting and logging authentication events.
-2. Identifying anomalous patterns such as impossible travel or multiple rapid logins.
-3. Generating human-readable alerts.
-4. Providing an extensible API for organizations to build on.
+Appling Cyber Defense System is a local-first prototype for authentication event monitoring and anomaly response.
 
-## Core Modules
+## Current Capabilities (Live)
 
-- `monitor.py` – event intake and IP lookup
-- `analyze.py` – rule-based + machine learning anomaly detection
-- `alerts.py` – email, Slack, SMS
-- `storage.py` – JSON/SQL logging
-- `dashboard.py` – FastAPI web interface
+1. **Event Intake** — POST login events with IP
+2. **Geolocation** — Country / region / city via ipapi.co
+3. **Anomaly Scoring** — Rule-based (foreign country, repeat IP, odd hours)
+4. **Multi-channel Alerts** — Email (SMTP), Slack, SMS (Twilio)
+5. **Local Persistence** — JSON event log
+6. **Dashboard** — Mobile-friendly web UI at `/`
+7. **Status API** — `/status` and `/events`
+
+## Planned Modules (Roadmap)
+
+- ZKP Privacy Layer — zero-knowledge verification of events without exposing raw data
+- Banking / Transaction Defense — secure transaction hooks and cyber-aware ledger integration
+- Command Dashboard — Terra Concord / Helioscope style operational view
+- Simulation Layer — Conway Game of Life grid, solar system sim, interactive choropleth maps
+- HSM / Cold Enclave Recovery — hardware-backed recovery packets
+
+## Design Principles
+
+- Single-file runnable prototype for easy inspection and iteration
+- Secrets only in `.env` (never committed)
+- Clear separation between detection, alerting, and future privacy/banking layers
+- Local-first; cloud or multi-user features come later
